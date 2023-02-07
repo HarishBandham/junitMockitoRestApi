@@ -3,9 +3,13 @@ package com.bezkoder.spring.test;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -18,7 +22,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
@@ -82,10 +91,26 @@ public class TutorialControllerTests {
             new Tutorial(3, "Spring Boot @WebMvcTest 3", "Description 3", true)));
 
     when(tutorialRepository.findAll()).thenReturn(tutorials);
+    
+    /* classes and their objects
+    MockHttpServletRequestBuilder reqBuilder = MockMvcRequestBuilders.get("/api/tutorials");
+    
+    ResultActions perform = mockMvc.perform(get("/api/tutorials"));
+    
+    MvcResult mvcresult = perform.andReturn();
+    
+    MockHttpServletResponse reqResponse = mvcresult.getResponse();
+    
+    int status = reqResponse.getStatus();
+    
+    //assertEquals(200,status);
+
+     */
     mockMvc.perform(get("/api/tutorials"))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.size()").value(tutorials.size()))
         .andDo(print());
+        
   }
 
   @Test
@@ -129,7 +154,8 @@ public class TutorialControllerTests {
     when(tutorialRepository.findById(id)).thenReturn(Optional.of(tutorial));
     when(tutorialRepository.save(any(Tutorial.class))).thenReturn(updatedtutorial);
 
-    mockMvc.perform(put("/api/tutorials/{id}", id).contentType(MediaType.APPLICATION_JSON)
+    mockMvc.perform(put("/api/tutorials/{id}", id)
+    	.contentType(MediaType.APPLICATION_JSON)
         .content(objectMapper.writeValueAsString(updatedtutorial)))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.title").value(updatedtutorial.getTitle()))
